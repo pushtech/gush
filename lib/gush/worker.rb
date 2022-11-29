@@ -2,7 +2,10 @@ require 'active_job'
 require 'redis-mutex'
 
 module Gush
-  class Worker < ::ActiveJob::Base
+  class Worker
+    include Sidekiq::Worker
+    sidekiq_options queue: 'gush_jobs'
+
     def perform(workflow_id, job_id)
       setup_job(workflow_id, job_id)
 
@@ -90,7 +93,7 @@ module Gush
         end
       end
     rescue RedisMutex::LockError
-      Worker.set(wait: 2.seconds).perform_later(workflow_id, job.name)
+      self.class.set(queue: job.queue).perform_in(2.seconds.from_now, workflow_id, job.name)
     end
   end
 end
