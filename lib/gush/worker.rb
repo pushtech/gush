@@ -31,13 +31,13 @@ module Gush
       end
     end
 
-    private
-
-    attr_reader :client, :workflow_id, :job, :configuration
-
     def client
       @client ||= Gush::Client.new(Gush.configuration)
     end
+
+    private
+
+    attr_reader :client, :workflow_id, :job, :configuration
 
     def configuration
       @configuration ||= client.configuration
@@ -97,3 +97,4 @@ module Gush
     end
   end
 end
+
