@@ -38,8 +38,7 @@ module Gush
       persist!
     end
 
-    def configure(*args)
-    end
+    def configure(*args) end
 
     def mark_as_stopped
       @stopped = true
@@ -53,7 +52,7 @@ module Gush
       client.persist_workflow(self)
     end
 
-    def expire! (ttl=nil)
+    def expire! (ttl = nil)
       client.expire_workflow(self, ttl)
     end
 
@@ -68,7 +67,7 @@ module Gush
     def resolve_dependencies
       @dependencies.each do |dependency|
         from = find_job(dependency[:from])
-        to   = find_job(dependency[:to])
+        to = find_job(dependency[:to])
 
         to.incoming << dependency[:from]
         from.outgoing << dependency[:to]
@@ -109,24 +108,24 @@ module Gush
 
     def run(klass, opts = {})
       node = klass.new({
-        workflow_id: id,
-        id: client.next_free_job_id(id, klass.to_s),
-        params: opts.fetch(:params, {}),
-        queue: opts[:queue]
-      })
+                         workflow_id: id,
+                         id: client.next_free_job_id(id, klass.to_s),
+                         params: opts.fetch(:params, {}),
+                         queue: opts[:queue]
+                       })
 
       jobs << node
 
       deps_after = [*opts[:after]]
 
       deps_after.each do |dep|
-        @dependencies << {from: dep.to_s, to: node.name.to_s }
+        @dependencies << { from: dep.to_s, to: node.name.to_s }
       end
 
       deps_before = [*opts[:before]]
 
       deps_before.each do |dep|
-        @dependencies << {from: node.name.to_s, to: dep.to_s }
+        @dependencies << { from: node.name.to_s, to: dep.to_s }
       end
 
       node.name
@@ -147,16 +146,16 @@ module Gush
 
     def status
       case
-        when failed?
-          :failed
-        when running?
-          :running
-        when finished?
-          :finished
-        when stopped?
-          :stopped
-        else
-          :pending
+      when failed?
+        :failed
+      when running?
+        :running
+      when finished?
+        :finished
+      when stopped?
+        :stopped
+      else
+        :pending
       end
     end
 
@@ -196,6 +195,10 @@ module Gush
       @id ||= client.next_free_workflow_id
     end
 
+    def client
+      @client ||= Client.new
+    end
+
     private
 
     def setup
@@ -203,16 +206,12 @@ module Gush
       resolve_dependencies
     end
 
-    def client
-      @client ||= Client.new
-    end
-
     def first_job
-      jobs.min_by{ |n| n.started_at || Time.now.to_i }
+      jobs.min_by { |n| n.started_at || Time.now.to_i }
     end
 
     def last_job
-      jobs.max_by{ |n| n.finished_at || 0 } if finished?
+      jobs.max_by { |n| n.finished_at || 0 } if finished?
     end
   end
 end
